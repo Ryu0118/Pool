@@ -20,3 +20,23 @@ public struct Pool<Value, Policy>: @unchecked Sendable where Policy: CachePolicy
         self.container = value
     }
 }
+
+extension Pool: Hashable {
+    public static func == (lhs: Pool<Value, Policy>, rhs: Pool<Value, Policy>) -> Bool {
+        let lhsContainerString = try? lhs.container?.string
+        let rhsContainerString = try? rhs.container?.string
+
+        return lhs.cachePolicy == rhs.cachePolicy && lhsContainerString == rhsContainerString
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        let containerString = try? container?.string
+
+        hasher.combine(cachePolicy)
+        hasher.combine(isContainerNil)
+
+        if let containerString {
+            hasher.combine(containerString)
+        }
+    }
+}

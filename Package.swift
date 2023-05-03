@@ -24,12 +24,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "Pool",
-            dependencies: [],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-strict-concurrency=complete"
-                ])
-            ]
+            dependencies: []
         ),
         .testTarget(
             name: "PoolTests",

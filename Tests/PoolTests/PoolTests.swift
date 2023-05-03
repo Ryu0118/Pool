@@ -23,10 +23,6 @@ final class PoolTests: XCTestCase {
         arrayCache = []
         arrayCache?.append("String")
         XCTAssertEqual(arrayCache?.first ?? "", "String")
-
-        $testCache.observeErrors { error in
-            print(error)
-        }
     }
 
     func testAsyncCache() async throws {
@@ -43,8 +39,8 @@ struct MyCachePolicy: CachePolicy {
     let diskCachePolicy: DiskCachePolicy
 
     init() {
-        memoryCachePolicy = .init(expiry: .never, limit: 3, maxSize: 3)
-        diskCachePolicy = .init(name: "MyCachePolicy", expiry: .never, maxSize: 20)
+        memoryCachePolicy = .init()
+        diskCachePolicy = .init(expiry: .never, maxSize: .max)
     }
 }
 

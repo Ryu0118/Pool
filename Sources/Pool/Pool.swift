@@ -9,7 +9,7 @@ public struct Pool<Value, Policy>: @unchecked Sendable where Policy: CachePolicy
 
     private let lock = NSRecursiveLock()
 
-    public init() {
+    init() {
         cachePolicy = Policy()
     }
 

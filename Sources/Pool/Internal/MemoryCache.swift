@@ -1,7 +1,7 @@
 import Foundation
 
 private typealias PoolIdentifier = ObjectIdentifier
-private typealias MemoryCacheContainer = [PolicyIdentifier: [PoolIdentifier: AnySendable]]
+private typealias MemoryCacheContainer = [PolicyIdentifier: [String: AnySendable]]
 
 // MARK: - MemoryCache
 final class MemoryCache: @unchecked Sendable, Cacher {
@@ -13,24 +13,24 @@ final class MemoryCache: @unchecked Sendable, Cacher {
 
     func get<Value, Policy>(
         _ key: Pool<Value, Policy>.Type,
-        _ : StaticString
+        _ function: StaticString
     ) throws -> Pool<Value, Policy> {
         defer { lock.unlock() }
         lock.lock()
 
-        return cached[PolicyIdentifier(Policy.self)]?[PoolIdentifier(key)]?.base as? Pool<Value, Policy> ?? Pool<Value, Policy>()
+        return cached[PolicyIdentifier(Policy.self)]?["\(function)"]?.base as? Pool<Value, Policy> ?? Pool<Value, Policy>()
     }
 
     func set<Value, Policy>(
         _ value: Pool<Value, Policy>,
-        _ : StaticString
+        _ function: StaticString
     ) throws {
         defer { lock.unlock() }
         lock.lock()
 
         let policyIdentifier = PolicyIdentifier(value.cachePolicy)
-        var policyContainer = cached[policyIdentifier] ?? [PoolIdentifier: AnySendable]()
-        policyContainer.updateValue(AnySendable(value), forKey: PoolIdentifier(Pool<Value, Policy>.self))
+        var policyContainer = cached[policyIdentifier] ?? [String: AnySendable]()
+        policyContainer.updateValue(AnySendable(value), forKey: "\(function)")
         cached[policyIdentifier] = policyContainer
     }
 
@@ -45,7 +45,7 @@ final class MemoryCache: @unchecked Sendable, Cacher {
         defer { lock.unlock() }
         lock.lock()
 
-        for (policy, _) in cached where policy.policy.memoryCachePolicy.memoryPressureLevel == memoryPressureLevel {
+        for (policy, _) in cached where policy.policy.memoryCachePolicy.memoryPressureLevel >= memoryPressureLevel {
             cached[policy]?.removeAll()
         }
     }

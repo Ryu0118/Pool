@@ -47,7 +47,7 @@ public final class CachedValues<Value, Policy>: @unchecked Sendable where Value:
             try diskCache.set(newValue, function)
         }
         catch {
-            print("[Pool Error]: ", error)
+            print("[Pool Set Error]:", error)
             observeError?(error)
         }
     }
@@ -67,14 +67,19 @@ public final class CachedValues<Value, Policy>: @unchecked Sendable where Value:
             return diskCachePool
         }
         catch {
+            print("[Pool Get Error]:", error)
             observeError?(error)
             return memoryCachedPool
         }
     }
 }
 
-public enum MemoryPressureLevel: Sendable, Encodable {
+public enum MemoryPressureLevel: Int, Sendable, Encodable, Comparable {
     case normal, warning, critical
+    
+    public static func < (lhs: MemoryPressureLevel, rhs: MemoryPressureLevel) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
 }
 
 private final class MemoryPressureMonitor: @unchecked Sendable {
@@ -92,10 +97,13 @@ private final class MemoryPressureMonitor: @unchecked Sendable {
                     switch event {
                     case .normal:
                         continuation.yield(.normal)
+
                     case .warning:
                         continuation.yield(.warning)
+
                     case.critical:
                         continuation.yield(.critical)
+
                     default: break
                     }
                 }
@@ -111,4 +119,5 @@ private final class MemoryPressureMonitor: @unchecked Sendable {
         dispatchSource.cancel()
     }
 }
+
 extension String: LocalizedError {}

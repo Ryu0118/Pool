@@ -2,30 +2,35 @@ import Foundation
 import CryptoKit
 
 public protocol CachePolicy: Hashable, Sendable, Encodable {
+    var name: String { get }
     var diskCachePolicy: DiskCachePolicy { get }
     var memoryCachePolicy: MemoryCachePolicy { get }
     init()
 }
 
+public extension CachePolicy {
+    var name: String {
+        String(describing: Self.self)
+    }
+}
+
 public struct DefaultCachePolicy: CachePolicy, Sendable, Encodable {
-    public let diskCachePolicy: DiskCachePolicy = .init(name: "Default")
+    public let name = "Default"
+    public let diskCachePolicy: DiskCachePolicy = .init()
     public let memoryCachePolicy: MemoryCachePolicy = .init()
     public init() {}
 }
 
 public struct DiskCachePolicy: Hashable, Sendable, Encodable {
-    public let name: String
     public let expiry: Expiry
     public let maxSize: UInt
     public let directory: URL
 
     public init(
-        name: String,
         expiry: Expiry = .never,
         maxSize: UInt = .max,
         directory: URL = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     ) {
-        self.name = name
         self.expiry = expiry
         self.maxSize = maxSize
         self.directory = directory
@@ -33,20 +38,11 @@ public struct DiskCachePolicy: Hashable, Sendable, Encodable {
 }
 
 public struct MemoryCachePolicy: Hashable, Sendable, Encodable {
-    public let expiry: Expiry
-    public let limit: UInt
-    public let maxSize: UInt
     public let memoryPressureLevel: MemoryPressureLevel
 
     public init(
-        expiry: Expiry = .never,
-        limit: UInt = .max,
-        maxSize: UInt = .max,
         memoryPressureLevel: MemoryPressureLevel = .normal
     ) {
-        self.expiry = expiry
-        self.limit = limit
-        self.maxSize = maxSize
         self.memoryPressureLevel = memoryPressureLevel
     }
 }
@@ -57,4 +53,19 @@ public enum Expiry: Hashable, Sendable, Encodable {
     case minutes(UInt)
     case seconds(UInt)
     case never
+
+    var date: Date {
+        switch self {
+        case .date(let date):
+            return date
+        case .hours(let uInt):
+            return Date().addingTimeInterval(60 * 60 * Double(uInt))
+        case .minutes(let uInt):
+            return Date().addingTimeInterval(60 * Double(uInt))
+        case .seconds(let uInt):
+            return Date().addingTimeInterval(TimeInterval(uInt))
+        case .never:
+            return .distantFuture
+        }
+    }
 }

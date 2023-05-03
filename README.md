@@ -2,6 +2,11 @@
 
 Modern cache library written in Swift
 
+## Installation
+```
+.package(url: "https://github.com/Ryu0118/Pool.git", from: "0.0.1")
+```
+
 ## Usage
 ```Swift
 extension CachedValues<String, DefaultCachePolicy> {

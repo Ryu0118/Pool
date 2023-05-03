@@ -1,3 +1,3 @@
 # Pool
 
-A description of this package.
+Modern cache library written in Swift

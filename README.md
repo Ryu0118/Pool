@@ -3,7 +3,7 @@
 Modern cache library written in Swift
 
 ## Installation
-```
+```Swift
 .package(url: "https://github.com/Ryu0118/Pool.git", from: "0.0.1")
 ```
 
